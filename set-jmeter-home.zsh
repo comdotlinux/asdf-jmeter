@@ -1,7 +1,7 @@
 function absolute_dir_path {
-    local absolute_path
-    absolute_path="$( cd -P "$( dirname "$1" )" && pwd )"
-    echo "$absolute_path"
+  local absolute_path
+  absolute_path="$(cd -P "$(dirname "$1")" && pwd)"
+  echo "$absolute_path"
 }
 
 asdf_update_jmeter_home() {
