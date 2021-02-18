@@ -2,19 +2,17 @@
 
 set -euo pipefail
 
-# TODO: Ensure this is the correct GitHub homepage where releases can be downloaded for jmeter.
-GH_REPO="https://downloads.apache.org/jmeter/binaries"
+DOWNLOAD_BASE_URL="https://downloads.apache.org/jmeter/binaries"
 CACHE_DIR="${TMPDIR:-/tmp}/asdf-jmeter.cache"
 trap 'test -d "${CACHE_DIR}" && rm -rf "${CACHE_DIR}"' EXIT
-if [ ! -d "${CACHE_DIR}" ] ; then
-    mkdir -p "${CACHE_DIR}"
+if [ ! -d "${CACHE_DIR}" ]; then
+  mkdir -p "${CACHE_DIR}"
 fi
 
 fail() {
   echo -e "asdf-jmeter: $*"
   exit 1
 }
-
 
 curl_opts=(-fsSL)
 
@@ -24,8 +22,6 @@ sort_versions() {
 }
 
 list_all_versions() {
-  # TODO: Adapt this. By default we simply list the tag names from GitHub releases.
-  # Change this function if jmeter has other means of determining installable versions.
   curl -s -L https://downloads.apache.org/jmeter/binaries | grep -o "apache-jmeter-.*.zip\"" | cut -d\" -f 1 | cut -d- -f 3 | rev | cut -c5- | rev
 }
 
@@ -34,17 +30,21 @@ download_release() {
   version="$1"
   filename="$2"
 
-  # TODO: Adapt the release URL convention for jmeter
-  url="$GH_REPO/$filename"
+  url="$DOWNLOAD_BASE_URL/$filename"
 
-  echo "* Downloading jmeter release $version..."
+  echo "* Downloading jmeter release $version... from $url to $filename"
   cd "${CACHE_DIR}" && curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
 }
 
 install_version() {
   if ! [ -x "$(command -v unzip)" ]; then
     echo "Install unzip to continue. Aborting." >&2
-    exit 1;
+    exit 1
+  fi
+
+  if ! [ -x "$(command -v java)" ]; then
+    echo "Install java to continue. Aborting." >&2
+    exit 1
   fi
 
   local install_type="$1"
@@ -55,19 +55,18 @@ install_version() {
     fail "asdf-jmeter supports release installs only"
   fi
 
-  # TODO: Adapt this to proper extension and adapt extracting strategy.
   local filename="apache-jmeter-$version"
   local filenameWithExtension="${filename}.zip"
   local release_file="$install_path/$filenameWithExtension"
   (
     mkdir -p "$install_path"
     download_release "$version" "$filenameWithExtension"
-    cd ${CACHE_DIR} && unzip "${CACHE_DIR}/${filenameWithExtension}" && mv -v "${CACHE_DIR}/${filename}" "$install_path" || fail "Could not unzip ${CACHE_DIR}/${filenameWithExtension}"
+    cd ${CACHE_DIR} && unzip -q "${CACHE_DIR}/${filenameWithExtension}" || fail "Could not unzip ${CACHE_DIR}/${filenameWithExtension}"
+    cd "${CACHE_DIR}/${filename}" && mv ./* "$install_path" || fail "Could not install jmeter, should have been in ${CACHE_DIR}/${filename}"
 
-    # TODO: Asert jmeter executable exists.
     local tool_cmd
     tool_cmd="jmeter"
-    test -x "$install_path/${filename}/bin/$tool_cmd" || fail "Expected $install_path/bin/$tool_cmd to be executable."
+    test -x "$install_path/bin/$tool_cmd" || fail "Expected $install_path/bin/$tool_cmd to be executable."
     echo "jmeter $version installation was successful!"
   ) || (
     rm -rf "$install_path"
