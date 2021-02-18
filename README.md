@@ -53,7 +53,7 @@ Contributions of any kind welcome! See the [contributing guide](contributing.md)
 
 [Thanks goes to these contributors](https://github.com/comdotlinux/asdf-jmeter/graphs/contributors)!
 
-The Code for bash and zsh paths is copied verbatim from : https://github.com/halcyon/asdf-java\
+The Code for bash and zsh paths is copied verbatim from : https://github.com/halcyon/asdf-java
 
 To set JMETER_HOME in your shell's initialization add the following (Untested):
 
