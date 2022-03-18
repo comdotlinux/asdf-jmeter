@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-DOWNLOAD_BASE_URL="https://downloads.apache.org/jmeter/binaries"
+export DOWNLOAD_BASE_URL="https://archive.apache.org/dist/jmeter/binaries"
 CACHE_DIR="${TMPDIR:-/tmp}/asdf-jmeter.cache"
 trap 'test -d "${CACHE_DIR}" && rm -rf "${CACHE_DIR}"' EXIT
 if [ ! -d "${CACHE_DIR}" ]; then
@@ -22,7 +22,7 @@ sort_versions() {
 }
 
 list_all_versions() {
-  curl -s -L https://downloads.apache.org/jmeter/binaries | grep -o "apache-jmeter-.*.zip\"" | cut -d\" -f 1 | cut -d- -f 3 | rev | cut -c5- | rev
+  curl -s -L "${DOWNLOAD_BASE_URL}" | grep -o "apache-jmeter-.*.zip\"" | cut -d\" -f 1 | cut -d- -f 3 | rev | cut -c5- | rev
 }
 
 download_release() {
